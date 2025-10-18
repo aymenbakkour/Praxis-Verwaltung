@@ -1,0 +1,5 @@
+{
+  "name": "Arztpraxis-Datenverwaltung",
+  "description": "Ein fortschrittliches Tool zur Verwaltung von Arztdaten. Suchen und filtern Sie sofort nach Name, Fachgebiet, Stadt und mehr. Funktioniert vollständig offline ohne Serververbindung.",
+  "requestFramePermissions": []
+}

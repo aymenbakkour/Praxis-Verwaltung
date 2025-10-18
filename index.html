@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arztpraxis-Datenverwaltung</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, Fragment } = React;
+
+    // --- Initial Data ---
+    const INITIAL_AERZTE = [
+      { id: 1, name: 'Dr. Anna Müller', fachgebiet: 'Allgemeinmedizin', adresse: 'Hauptstraße 1', stadt: 'Berlin', telefon: '030-123456' },
+      { id: 2, name: 'Dr. Peter Schmidt', fachgebiet: 'Kardiologie', adresse: 'Marktplatz 5', stadt: 'München', telefon: '089-654321' },
+      { id: 3, name: 'Dr. Maria Weber', fachgebiet: 'Pädiatrie', adresse: 'Schulweg 12', stadt: 'Hamburg', telefon: '040-987654' },
+      { id: 4, name: 'Dr. Klaus Meier', fachgebiet: 'Orthopädie', adresse: 'Gartenallee 8', stadt: 'Köln', telefon: '0221-112233' },
+      { id: 5, name: 'Dr. Sabine Fischer', fachgebiet: 'Dermatologie', adresse: 'Rosenweg 3', stadt: 'Frankfurt', telefon: '069-445566' },
+      { id: 6, name: 'Dr. Thomas Bauer', fachgebiet: 'Allgemeinmedizin', adresse: 'Bahnhofstraße 20', stadt: 'München', telefon: '089-778899' },
+    ];
+
+    // --- Components ---
+
+    const ArztKarte = ({ arzt, onEdit, onDelete, isAdmin }) => (
+      <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+        <h3 className="text-xl font-bold text-gray-800">{arzt.name}</h3>
+        <p className="text-indigo-600 font-semibold mt-1">{arzt.fachgebiet}</p>
+        <div className="mt-4 text-gray-600 space-y-2">
+          <p><strong className="font-medium">Adresse:</strong> {arzt.adresse}, {arzt.stadt}</p>
+          <p><strong className="font-medium">Telefon:</strong> {arzt.telefon}</p>
+        </div>
+        {isAdmin && (
+          <div className="mt-4 pt-4 border-t border-gray-200 flex space-x-2">
+            <button onClick={() => onEdit(arzt)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm">Bearbeiten</button>
+            <button onClick={() => onDelete(arzt.id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">Löschen</button>
+          </div>
+        )}
+      </div>
+    );
+
+    const FilterDropdown = ({ label, options, value, onChange }) => (
+      <div className="w-full">
+        <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-gray-700">{label}</label>
+        <select
+          id={label.toLowerCase()}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
+          <option value="">Alle</option>
+          {options.map(option => <option key={option} value={option}>{option}</option>)}
+        </select>
+      </div>
+    );
+    
+    // --- Main App Component ---
+    
+    const App = () => {
+      const [aerzte, setAerzte] = useState(() => {
+        // For offline persistence, you could use localStorage here.
+        // For this example, we just start with the initial data.
+        return INITIAL_AERZTE;
+      });
+      
+      const [searchTerm, setSearchTerm] = useState('');
+      const [stadtFilter, setStadtFilter] = useState('');
+      const [fachgebietFilter, setFachgebietFilter] = useState('');
+
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [showAdminLogin, setShowAdminLogin] = useState(false);
+      const [adminPassword, setAdminPassword] = useState('');
+      
+      const [showArztModal, setShowArztModal] = useState(false);
+      const [editingArzt, setEditingArzt] = useState(null);
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if (adminPassword === 'admin123') {
+          setIsAdmin(true);
+          setShowAdminLogin(false);
+          setAdminPassword('');
+        } else {
+          alert('Falsches Passwort!');
+        }
+      };
+      
+      const handleLogout = () => {
+        setIsAdmin(false);
+      };
+
+      const handleOpenModal = (arzt = null) => {
+        setEditingArzt(arzt);
+        setShowArztModal(true);
+      };
+
+      const handleCloseModal = () => {
+        setShowArztModal(false);
+        setEditingArzt(null);
+      };
+
+      const handleSaveArzt = (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const arztData = Object.fromEntries(formData.entries());
+
+        if (editingArzt) {
+          // Update
+          setAerzte(aerzte.map(a => a.id === editingArzt.id ? { ...a, ...arztData } : a));
+        } else {
+          // Add new
+          const newArzt = { ...arztData, id: Date.now() }; // Simple unique ID
+          setAerzte([...aerzte, newArzt]);
+        }
+        handleCloseModal();
+      };
+      
+      const handleDeleteArzt = (id) => {
+        if (window.confirm('Sind Sie sicher, dass Sie diesen Eintrag löschen möchten?')) {
+          setAerzte(aerzte.filter(a => a.id !== id));
+        }
+      };
+      
+      const handleExport = () => {
+        const worksheet = XLSX.utils.json_to_sheet(aerzte.map(({id, ...rest}) => rest)); // remove id from export
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Ärzte");
+        XLSX.writeFile(workbook, "aerzte_export.xlsx");
+      };
+      
+      const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const bstr = evt.target.result;
+            const wb = XLSX.read(bstr, { type: 'binary' });
+            const wsname = wb.SheetNames[0];
+            const ws = wb.Sheets[wsname];
+            const data = XLSX.utils.sheet_to_json(ws);
+
+            if(data.length > 0 && window.confirm(`Gefunden ${data.length} Einträge. Möchten Sie die aktuellen Daten ersetzen?`)) {
+               const importedAerzte = data.map((row, index) => ({ id: Date.now() + index, ...row }));
+               setAerzte(importedAerzte);
+            }
+          } catch(error) {
+            console.error("Error reading file:", error);
+            alert("Fehler beim Lesen der Datei. Stellen Sie sicher, dass es sich um eine gültige XLSX-Datei handelt.");
+          }
+        };
+        reader.readAsBinaryString(file);
+        e.target.value = ''; // Reset file input
+      };
+
+
+      const filteredAerzte = useMemo(() => {
+        return aerzte.filter(arzt => {
+          const searchMatch = searchTerm.toLowerCase() === '' ||
+            Object.values(arzt).some(val =>
+              String(val).toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          const stadtMatch = stadtFilter === '' || arzt.stadt === stadtFilter;
+          const fachgebietMatch = fachgebietFilter === '' || arzt.fachgebiet === fachgebietFilter;
+          return searchMatch && stadtMatch && fachgebietMatch;
+        });
+      }, [aerzte, searchTerm, stadtFilter, fachgebietFilter]);
+
+      const staedte = useMemo(() => [...new Set(aerzte.map(a => a.stadt))], [aerzte]);
+      const fachgebiete = useMemo(() => [...new Set(aerzte.map(a => a.fachgebiet))], [aerzte]);
+      
+      return (
+        <Fragment>
+          <div className="min-h-screen flex flex-col">
+            <header className="bg-white shadow-sm">
+              <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <h1 className="text-3xl font-bold text-gray-900">Arztpraxis-Datenverwaltung</h1>
+                {isAdmin ? (
+                   <button onClick={handleLogout} className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Logout</button>
+                ) : (
+                  <button onClick={() => setShowAdminLogin(true)} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Admin-Login</button>
+                )}
+              </div>
+            </header>
+            <main className="flex-grow max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 w-full">
+              <div className="bg-white p-4 rounded-lg shadow mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-3">
+                     <label htmlFor="search" className="block text-sm font-medium text-gray-700">Sofortsuche</label>
+                    <input
+                      type="text"
+                      id="search"
+                      placeholder="Suchen nach Name, Fachgebiet, Adresse..."
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <FilterDropdown label="Stadt" options={staedte} value={stadtFilter} onChange={setStadtFilter} />
+                  <FilterDropdown label="Fachgebiet" options={fachgebiete} value={fachgebietFilter} onChange={setFachgebietFilter} />
+                </div>
+              </div>
+
+              {isAdmin && (
+                <div className="mb-6 bg-gray-50 p-4 rounded-lg border flex flex-wrap gap-2 items-center">
+                  <span className="font-bold text-gray-700">Admin-Aktionen:</span>
+                  <button onClick={() => handleOpenModal()} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Neuen Arzt hinzufügen</button>
+                  <button onClick={handleExport} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Daten exportieren (XLSX)</button>
+                  <label className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 cursor-pointer">
+                    Daten importieren (XLSX)
+                    <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleFileUpload} />
+                  </label>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredAerzte.length > 0 ? (
+                  filteredAerzte.map(arzt => <ArztKarte key={arzt.id} arzt={arzt} onEdit={handleOpenModal} onDelete={handleDeleteArzt} isAdmin={isAdmin} />)
+                ) : (
+                  <p className="md:col-span-3 text-center text-gray-500">Keine Einträge gefunden.</p>
+                )}
+              </div>
+            </main>
+            <footer className="bg-gray-800 text-white text-center py-4">
+                <p>Alle Rechte vorbehalten &copy; {new Date().getFullYear()} Aymen Bakkour</p>
+            </footer>
+          </div>
+          
+          {/* Admin Login Modal */}
+          {showAdminLogin && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h2 className="text-xl font-bold mb-4">Admin-Login</h2>
+                <form onSubmit={handleLogin}>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Passwort</label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                    autoFocus
+                  />
+                  <div className="mt-4 flex justify-end space-x-2">
+                    <button type="button" onClick={() => setShowAdminLogin(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Abbrechen</button>
+                    <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Login</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Add/Edit Arzt Modal */}
+          {showArztModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                 <h2 className="text-xl font-bold mb-4">{editingArzt ? 'Arzt bearbeiten' : 'Neuen Arzt hinzufügen'}</h2>
+                 <form onSubmit={handleSaveArzt} className="space-y-4">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                      <input type="text" name="name" id="name" defaultValue={editingArzt?.name} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                    </div>
+                     <div>
+                      <label htmlFor="fachgebiet" className="block text-sm font-medium text-gray-700">Fachgebiet</label>
+                      <input type="text" name="fachgebiet" id="fachgebiet" defaultValue={editingArzt?.fachgebiet} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                    </div>
+                    <div>
+                      <label htmlFor="adresse" className="block text-sm font-medium text-gray-700">Adresse</label>
+                      <input type="text" name="adresse" id="adresse" defaultValue={editingArzt?.adresse} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                    </div>
+                    <div>
+                      <label htmlFor="stadt" className="block text-sm font-medium text-gray-700">Stadt</label>
+                      <input type="text" name="stadt" id="stadt" defaultValue={editingArzt?.stadt} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                    </div>
+                     <div>
+                      <label htmlFor="telefon" className="block text-sm font-medium text-gray-700">Telefonnummer</label>
+                      <input type="text" name="telefon" id="telefon" defaultValue={editingArzt?.telefon} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                    </div>
+                    <div className="mt-6 flex justify-end space-x-2">
+                      <button type="button" onClick={handleCloseModal} className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Abbrechen</button>
+                      <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Speichern</button>
+                    </div>
+                 </form>
+              </div>
+            </div>
+          )}
+        </Fragment>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+  </script>
+</body>
+</html>
