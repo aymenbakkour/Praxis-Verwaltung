@@ -39,7 +39,7 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo, Fragment } = React;
 
-    // --- Initial Data ---
+    // --- Initial Data (used only if localStorage is empty) ---
     const INITIAL_AERZTE = [
       { id: 1, name: 'Dr. Anna Müller', fachgebiet: 'Allgemeinmedizin', adresse: 'Hauptstraße 1', stadt: 'Berlin', telefon: '030-123456' },
       { id: 2, name: 'Dr. Peter Schmidt', fachgebiet: 'Kardiologie', adresse: 'Marktplatz 5', stadt: 'München', telefon: '089-654321' },
@@ -87,9 +87,17 @@
     
     const App = () => {
       const [aerzte, setAerzte] = useState(() => {
-        // For offline persistence, you could use localStorage here.
-        // For this example, we just start with the initial data.
-        return INITIAL_AERZTE;
+        try {
+          const savedAerzte = localStorage.getItem('aerzteDaten');
+          if (savedAerzte) {
+            const parsedData = JSON.parse(savedAerzte);
+            return Array.isArray(parsedData) ? parsedData : INITIAL_AERZTE;
+          }
+          return INITIAL_AERZTE;
+        } catch (error) {
+          console.error("Fehler beim Lesen aus dem Local Storage:", error);
+          return INITIAL_AERZTE;
+        }
       });
       
       const [searchTerm, setSearchTerm] = useState('');
@@ -102,6 +110,15 @@
       
       const [showArztModal, setShowArztModal] = useState(false);
       const [editingArzt, setEditingArzt] = useState(null);
+      
+      // Save to localStorage whenever 'aerzte' state changes
+      useEffect(() => {
+        try {
+          localStorage.setItem('aerzteDaten', JSON.stringify(aerzte));
+        } catch (error) {
+          console.error("Fehler beim Schreiben in den Local Storage:", error);
+        }
+      }, [aerzte]);
 
       const handleLogin = (e) => {
         e.preventDefault();
