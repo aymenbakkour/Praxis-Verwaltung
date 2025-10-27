@@ -41,12 +41,49 @@
 
     // --- Initial Data (used only if localStorage is empty) ---
     const INITIAL_AERZTE = [
-      { id: 1, name: 'Dr. Anna Müller', fachgebiet: 'Allgemeinmedizin', adresse: 'Hauptstraße 1', stadt: 'Berlin', telefon: '030-123456' },
-      { id: 2, name: 'Dr. Peter Schmidt', fachgebiet: 'Kardiologie', adresse: 'Marktplatz 5', stadt: 'München', telefon: '089-654321' },
-      { id: 3, name: 'Dr. Maria Weber', fachgebiet: 'Pädiatrie', adresse: 'Schulweg 12', stadt: 'Hamburg', telefon: '040-987654' },
-      { id: 4, name: 'Dr. Klaus Meier', fachgebiet: 'Orthopädie', adresse: 'Gartenallee 8', stadt: 'Köln', telefon: '0221-112233' },
-      { id: 5, name: 'Dr. Sabine Fischer', fachgebiet: 'Dermatologie', adresse: 'Rosenweg 3', stadt: 'Frankfurt', telefon: '069-445566' },
-      { id: 6, name: 'Dr. Thomas Bauer', fachgebiet: 'Allgemeinmedizin', adresse: 'Bahnhofstraße 20', stadt: 'München', telefon: '089-778899' },
+      { id: 1, name: 'Dr. med. K Marktgass', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Marktgasse 52', stadt: 'Eisenberg', telefon: '036691 5' },
+      { id: 2, name: 'Dr. med. T Rudolf-Bre', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Rudolf-Breitscheid-Str.', stadt: 'Eisenberg', telefon: '036691 5' },
+      { id: 3, name: 'Zahnmedizin Schützengasse', fachgebiet: 'Zahnmedizin', adresse: 'Schützengasse', stadt: 'Eisenberg', telefon: '036691 4' },
+      { id: 4, name: 'Dr. med. c Rudolf-Bre', fachgebiet: 'Oralchirurgie', adresse: 'Rudolf-Breitscheid-Str.', stadt: 'Eisenberg', telefon: '036691 24' },
+      { id: 5, name: 'Praxis Zahnmedizin Eisenberg', fachgebiet: 'Zahnmedizin', adresse: 'Eisenberg', stadt: 'Eisenberg', telefon: '036691 8' },
+      { id: 6, name: 'Dr. med. E Klosterstr.', fachgebiet: 'Gynäkologie', adresse: 'Klosterstr.', stadt: 'Eisenberg', telefon: '036691 4' },
+      { id: 7, name: 'Dr. med. C Walther-R', fachgebiet: 'Gynäkologie', adresse: 'Walther-Rathenau-Str.', stadt: 'Eisenberg', telefon: '036691 4' },
+      { id: 8, name: 'Dr. Peter S', fachgebiet: 'Augenheilkunde', adresse: 'Markt 5', stadt: 'Stadtroda', telefon: '036428 98' },
+      { id: 9, name: 'Dr. med. F Waldsiedlung', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Waldsiedlung', stadt: 'Hermsdorf', telefon: '036601 4' },
+      { id: 10, name: 'Dr. med. A Eisenberger Str.', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Eisenberger Str.', stadt: 'Hermsdorf', telefon: '036601 8' },
+      { id: 11, name: 'Zahnärzte Waldsiedlung', fachgebiet: 'Zahnmedizin', adresse: 'Waldsiedlung', stadt: 'Hermsdorf', telefon: '036601 45' },
+      { id: 12, name: 'Zahnwerk Robert-Friese-Str.', fachgebiet: 'Zahnmedizin', adresse: 'Robert-Friese-Str.', stadt: 'Hermsdorf', telefon: '036601 8' },
+      { id: 13, name: 'Dr. med. d Rodaer Str.', fachgebiet: 'Zahnmedizin', adresse: 'Rodaer Str.', stadt: 'Hermsdorf', telefon: '036601 9' },
+      { id: 14, name: 'Dr. med. S Eisenberger Str.', fachgebiet: 'Gynäkologie', adresse: 'Eisenberger Str.', stadt: 'Hermsdorf', telefon: '036601 8' },
+      { id: 15, name: 'Dr. med. S Puschkinplatz', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Puschkinplatz 3, 075', stadt: 'Gera', telefon: '' },
+      { id: 16, name: 'Dr. med. J Leuchtenburgstr.', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Leuchtenburgstr. 10', stadt: 'Gera', telefon: '' },
+      { id: 17, name: 'Dr. med. L Südstraße', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Südstraße 34, 07548', stadt: 'Gera', telefon: '' },
+      { id: 18, name: 'Dr. med. C Werner-Petzold-Str.', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Werner-Petzold-Str.', stadt: 'Gera', telefon: '' },
+      { id: 19, name: 'Dr. med. C Schmelzhüttenstraße', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Schmelzhüttenstraße', stadt: 'Gera', telefon: '' },
+      { id: 20, name: 'Dr. med. E Zeulsdorfer Str.', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Zeulsdorfer Str. 71', stadt: 'Gera', telefon: '' },
+      { id: 21, name: 'Praxis Dr. Clara-Zetkin', fachgebiet: 'Zahnmedizin', adresse: 'Clara-Zetkin-Str.', stadt: 'Gera', telefon: '0365 8005' },
+      { id: 22, name: 'Toralf Kön Lasurstr.', fachgebiet: 'Zahnmedizin', adresse: 'Lasurstr. 2', stadt: 'Gera', telefon: '0365 730' },
+      { id: 23, name: 'Dr. med. c Wiesestr.', fachgebiet: 'Zahnmedizin', adresse: 'Wiesestr. 185, 07551', stadt: 'Gera', telefon: '' },
+      { id: 24, name: 'Dipl.-Med Leipziger', fachgebiet: 'Gynäkologie', adresse: 'Leipziger Str.', stadt: 'Gera', telefon: '0365 239' },
+      { id: 25, name: 'Dr. med. J Altenburg', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Altenburger Str.', stadt: 'Jena', telefon: '+49 3641' },
+      { id: 26, name: 'Dr. med. A Karl-Marx', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Karl-Marx-Allee', stadt: 'Jena', telefon: '03641 33' },
+      { id: 27, name: 'Dr. med. J Drackendorf-Center', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Drackendorf-Center', stadt: 'Jena', telefon: '' },
+      { id: 28, name: 'Dr. med. C Westbahnhofstr.', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Westbahnhofstr. 2', stadt: 'Jena', telefon: '' },
+      { id: 29, name: 'Dr. med. E Beutnitzer Str.', fachgebiet: 'Kinder- und Jugendmedizin', adresse: 'Beutnitzer Str. 15', stadt: 'Jena', telefon: '' },
+      { id: 30, name: 'Dr. med. c Käthe-Kollwitz-Str.', fachgebiet: 'Zahnmedizin', adresse: 'Käthe-Kollwitz-Str. 1', stadt: 'Jena', telefon: '' },
+      { id: 31, name: 'Dr. med. c Bibliotheksweg', fachgebiet: 'Zahnmedizin', adresse: 'Bibliotheksweg 6, 07', stadt: 'Jena', telefon: '' },
+      { id: 32, name: 'Dr. med. c Paradiesstraße', fachgebiet: 'Zahnmedizin', adresse: 'Paradiesstraße 2, 07', stadt: 'Jena', telefon: '' },
+      { id: 33, name: 'Dr. med. M Fischergasse', fachgebiet: 'Zahnmedizin', adresse: 'Fischergasse 1, 0774', stadt: 'Jena', telefon: '' },
+      { id: 34, name: 'Dr. med. J Käthe-Kollwitz-Str.', fachgebiet: 'Zahnmedizin', adresse: 'Käthe-Kollwitz-Str. 1', stadt: 'Jena', telefon: '' },
+      { id: 35, name: 'Dr. med. c Westbahn', fachgebiet: 'Zahnmedizin', adresse: 'Westbahnhofstr.', stadt: 'Jena', telefon: '03641 622' },
+      { id: 36, name: 'Dr. med. C Markt', fachgebiet: 'Gynäkologie', adresse: 'Markt 4', stadt: 'Jena', telefon: '' },
+      { id: 37, name: 'Dr. med. C Westbahnhofstr.', fachgebiet: 'Gynäkologie', adresse: 'Westbahnhofstr. 2', stadt: 'Jena', telefon: '' },
+      { id: 38, name: 'Dr. med. E Kastanienstr.', fachgebiet: 'Gynäkologie', adresse: 'Kastanienstr. 11, 077', stadt: 'Jena', telefon: '' },
+      { id: 39, name: 'Waldklinik Klosterlau', fachgebiet: 'Krankenhaus', adresse: 'Klosterlausnitz', stadt: 'Eisenberg', telefon: '036691 8' },
+      { id: 40, name: 'SRH Psychiatrie Carl-von-C', fachgebiet: 'Psychiatrie', adresse: 'Carl-von-Ossietzky-Str.', stadt: 'Eisenberg', telefon: '036691 24' },
+      { id: 41, name: 'Asklepios Bahnhofstr', fachgebiet: 'Psychiatrie', adresse: 'Bahnhofstr.', stadt: 'Stadtroda', telefon: '036428 56' },
+      { id: 42, name: 'SRH Waldkrankenhaus', fachgebiet: 'Krankenhaus', adresse: 'Straße des Friedens', stadt: 'Gera', telefon: '0365 828' },
+      { id: 43, name: 'Universitätsklinikum', fachgebiet: 'Krankenhaus', adresse: 'Bachstraße', stadt: 'Jena', telefon: '03641 9-3' },
     ];
 
     // --- Components ---
@@ -91,7 +128,7 @@
           const savedAerzte = localStorage.getItem('aerzteDaten');
           if (savedAerzte) {
             const parsedData = JSON.parse(savedAerzte);
-            return Array.isArray(parsedData) ? parsedData : INITIAL_AERZTE;
+            return Array.isArray(parsedData) && parsedData.length > 0 ? parsedData : INITIAL_AERZTE;
           }
           return INITIAL_AERZTE;
         } catch (error) {
@@ -213,8 +250,8 @@
         });
       }, [aerzte, searchTerm, stadtFilter, fachgebietFilter]);
 
-      const staedte = useMemo(() => [...new Set(aerzte.map(a => a.stadt))], [aerzte]);
-      const fachgebiete = useMemo(() => [...new Set(aerzte.map(a => a.fachgebiet))], [aerzte]);
+      const staedte = useMemo(() => [...new Set(aerzte.map(a => a.stadt).filter(Boolean).sort())], [aerzte]);
+      const fachgebiete = useMemo(() => [...new Set(aerzte.map(a => a.fachgebiet).filter(Boolean).sort())], [aerzte]);
       
       return (
         <Fragment>
